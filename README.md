@@ -84,10 +84,56 @@ When localized prey density spikes, hunting effort drops to zero. This grants ap
 
 ## 🚀 How to Contribute and Join the Project 
 
-1. **Fork** this repository. 
+1. **Fork** this repository.
 
-2. Build the data pipeline script using the target client libraries. 
+markdown## 🧪 Open-Source Starter Code Architecture
 
-3. Open a **Pull Request** displaying your generated correlation graphs.  
+To fast-track development, the baseline API connection scripts have been structured below. Developers can use these snippets as the foundation for the automated pipeline.
 
-4. Once verified, you will be formally added to the Zenodo DOI publication file as a Core Technical Architect. 
+### Pipeline 1: Solar Activity Input (SunPy)
+```python
+import pandas as pd
+from sunpy.net import Fido, attrs as a
+
+def get_goes_solar_flares(start_date, end_date):
+    """Queries SunPy for GOES Satellite X-ray flux events."""
+    result = Fido.search(
+        a.Time(start_date, end_date),
+        a.hek.FL,
+        a.hek.FRM.Name == "SWPC"
+    )
+    if result:
+        df = result['hek'].to_pandas()
+        clean_df = df[['event_starttime', 'event_peaktime', 'fl_classvalue']]
+        major_flares = clean_df[clean_df['fl_classvalue'].str.startswith(('M', 'X'), na=False)]
+        return major_flares.sort_values(by='event_starttime')
+    return None
+```
+
+### Pipeline 2 & 3: Geomagnetic Spikes & ONC Audio Telemetry
+```python
+import requests
+
+def get_newport_magnetic_data(start_date, end_date):
+    """Tracks local 6-degree magnetic declination spikes near Newport, WA (NMP)."""
+    url = f"https://usgs.gov{start_date}&endtime={end_date}&type=adjusted"
+    response = requests.get(url)
+    return response.json() if response.status_code == 200 else None
+
+def get_salish_sea_orca_audio(start_date, end_date):
+    """Extracts bioacoustic event metadata and orca communication density from ONC."""
+    url = f"https://oceannetworks.ca{start_date}&to={end_date}"
+    response = requests.get(url)
+    return response.json() if response.status_code == 200 else None
+```
+
+### 🎯 Next Milestones for Contributors:
+1. **Time-Series Alignment:** Clean and synchronize the timestamps across all three datasets.
+2. **Lag Identification:** Isolate the exact 48-to-72-hour delay window between an X-Class flare peak and an uptick in regional orca social vocalization density.
+3. **Visualization:** Plot the final correlation graphs (`matplotlib` / `seaborn`) to append to the main Zenodo publication.
+
+3. Build the data pipeline script using the target client libraries. 
+
+4. Open a **Pull Request** displaying your generated correlation graphs.  
+
+5. Once verified, you will be formally added to the Zenodo DOI publication file as a Core Technical Architect. 
