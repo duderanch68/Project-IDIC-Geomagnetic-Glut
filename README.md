@@ -200,7 +200,7 @@ def merge_and_analyze_lag(flare_df, mag_df, audio_df):
             })
             
     return pd.DataFrame(correlated_events)
-```
+ ```
 markdown## ⚛️ The Quantum Bridge: Cryptochrome & Radical Pair Disruption
 
 To address mainstream skepticism regarding how a macro-geomagnetic shift translates to a precise 48-to-72-hour behavioral lag in apex predators, the framework integrates quantum biology alongside mechanical magnetite navigation.
