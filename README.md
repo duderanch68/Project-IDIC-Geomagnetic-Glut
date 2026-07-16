@@ -47,21 +47,21 @@ Easy prey → reduced hunting effort for orcas → cognitive slack → increased
 
 ---
 
-## 🧪 Pipeline Starter Code (Updated & Fixed)
+## 🧪 Pipeline Starter Code (Clean & Fixed)
 
-Copy these functions into `Pipeline.py` as a starting point.
+Save the code below as `Pipeline.py`:
 
 ```python
 import pandas as pd
-from datetime import datetime
 import requests
-# sunpy is recommended for solar data (pip install sunpy)
+from datetime import datetime
+# For solar data: pip install sunpy
 
 # ==================== 1. SOLAR ACTIVITY ====================
 from sunpy.net import Fido, attrs as a
 
 def get_major_solar_flares(start_date, end_date):
-    """Fetch major (M/X-class) solar flares using SunPy."""
+    """Fetch major (M/X-class) solar flares."""
     result = Fido.search(
         a.Time(start_date, end_date),
         a.hek.FL,
@@ -70,22 +70,21 @@ def get_major_solar_flares(start_date, end_date):
     if result:
         df = result['hek'].to_pandas()
         df = df[['event_starttime', 'event_peaktime', 'fl_classvalue']]
-        major_flares = df[df['fl_classvalue'].str.startswith(('M', 'X'), na=False)]
-        return major_flares.sort_values(by='event_peaktime').reset_index(drop=True)
+        major = df[df['fl_classvalue'].str.startswith(('M', 'X'), na=False)]
+        return major.sort_values(by='event_peaktime').reset_index(drop=True)
     return pd.DataFrame()
 
 # ==================== 2. GEOMAGNETIC DATA ====================
 def get_newport_magnetic_data(start_date, end_date):
-    """Pull magnetic declination data from USGS (Newport Observatory)."""
-    # Real USGS Geomagnetism API endpoint example
+    """Pull magnetic data from USGS (Newport, WA)."""
     base_url = "https://geomag.usgs.gov/ws/data/"
     params = {
-        "id": "NMP",                    # Newport, WA
+        "id": "NMP",
         "starttime": start_date,
         "endtime": end_date,
-        "elements": "D,H",              # D = Declination, H = Horizontal intensity
+        "elements": "D,H",
         "format": "json",
-        "sampling_period": "60"         # minutes
+        "sampling_period": "60"
     }
     try:
         response = requests.get(base_url, params=params, timeout=30)
@@ -97,17 +96,16 @@ def get_newport_magnetic_data(start_date, end_date):
                 df['timestamp'] = pd.to_datetime(df['timestamp'])
                 return df
     except Exception as e:
-        print(f"Error fetching magnetic data: {e}")
+        print(f"Magnetic data error: {e}")
     return pd.DataFrame()
 
 # ==================== 3. ORCA BIOACOUSTICS ====================
 def get_salish_sea_orca_data(start_date, end_date, token=None):
-    """Query ONC Oceans 3.0 API for hydrophone data in Salish Sea."""
+    """Query ONC API for Salish Sea hydrophone data."""
     base_url = "https://data.oceannetworks.ca/api/search"
-    # You will need a free ONC token for full access
     headers = {"Authorization": f"Bearer {token}"} if token else {}
     params = {
-        "locationCode": "SVI",           # Strait of Georgia / Salish Sea
+        "locationCode": "SVI",
         "deviceCategoryCode": "HYDROPHONE",
         "dateFrom": f"{start_date}T00:00:00.000Z",
         "dateTo": f"{end_date}T23:59:59.999Z",
@@ -116,49 +114,40 @@ def get_salish_sea_orca_data(start_date, end_date, token=None):
     try:
         response = requests.get(base_url, headers=headers, params=params)
         if response.status_code == 200:
-            data = response.json()
-            return pd.DataFrame(data)
+            return pd.DataFrame(response.json())
     except Exception as e:
-        print(f"Error fetching ONC data: {e}")
+        print(f"ONC data error: {e}")
     return pd.DataFrame()
 
 # ==================== 4. LAG ANALYSIS ====================
 def merge_and_analyze_lag(flare_df, mag_df, audio_df):
-    """Align datasets and find 48-72 hour correlations."""
+    """Find 48-72 hour correlations."""
     if flare_df.empty or mag_df.empty or audio_df.empty:
         return pd.DataFrame()
     
-    # Standardize timestamps
     flare_df['event_peaktime'] = pd.to_datetime(flare_df['event_peaktime'], utc=True)
     mag_df['timestamp'] = pd.to_datetime(mag_df['timestamp'], utc=True)
-    # Adjust column name based on actual ONC output
+    
     time_col = 'dateFrom' if 'dateFrom' in audio_df.columns else audio_df.columns[0]
     audio_df[time_col] = pd.to_datetime(audio_df[time_col], utc=True)
     
-    correlated_events = []
-    
+    correlated = []
     for _, flare in flare_df.iterrows():
         flare_time = flare['event_peaktime']
         window_start = flare_time + pd.Timedelta(hours=48)
-        window_end = flare_time + pd.Timedelta(hours=72)
+        window_end   = flare_time + pd.Timedelta(hours=72)
         
-        # Check for significant magnetic shifts
-        mag_window = mag_df[(mag_df['timestamp'] >= window_start) & 
-                           (mag_df['timestamp'] <= window_end)]
-        significant_tilts = mag_window[mag_window['declination'].abs() >= 6.0]
+        mag_window = mag_df[(mag_df['timestamp'] >= window_start) & (mag_df['timestamp'] <= window_end)]
+        significant = mag_window[mag_window['declination'].abs() >= 6.0]
         
-        # Check for orca vocalization/activity increase
-        audio_window = audio_df[(audio_df[time_col] >= window_start) & 
-                               (audio_df[time_col] <= window_end)]
+        audio_window = audio_df[(audio_df[time_col] >= window_start) & (audio_df[time_col] <= window_end)]
         
-        if not significant_tilts.empty and not audio_window.empty:
-            correlated_events.append({
+        if not significant.empty and not audio_window.empty:
+            correlated.append({
                 'flare_time': flare_time,
-                'flare_class': flare['fl_classvalue'],
-                'magnetic_spikes': len(significant_tilts),
-                'orca_events': len(audio_window),
-                'lag_hours': (window_start - flare_time).total_seconds() / 3600
+                'flare_class': flare.get('fl_classvalue'),
+                'magnetic_spikes': len(significant),
+                'orca_events': len(audio_window)
             })
-    
-    return pd.DataFrame(correlated_events)
+    return pd.DataFrame(correlated)
 
