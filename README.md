@@ -1,102 +1,67 @@
-markdown 
+markdown
 
-# Project: The IDIC Marine Ecology Framework 
+# Project: The IDIC Marine Ecology Framework
 
-### The Geomagnetic Glut Hypothesis: Connecting Solar Maxima, Lunar Dynamics, and Orca Cultural Fads 
+### The Geomagnetic Glut Hypothesis: Connecting Solar Maxima, Lunar Dynamics, and Orca Cultural Fads
 
- 
+**Author:** Jeffrey A. LeClair Jr.  
+**Permanent CERN DOI:** [10.5281/zenodo.21347876](https://zenodo.org)  
+**Status:** Open-Source Software Request / Immediate Co-Authorship Offered
 
-* **Author:** Jeffrey A. LeClair Jr. 
+---
 
-* **Permanent CERN DOI:** [10.5281/zenodo.21347876](https://zenodo.org) 
+## 📢 Call for Data Engineers & Co-Authors
 
-* **Status:** Open-Source Software Request / Immediate Co-Authorship Offered 
+The conceptual physics and environmental architecture of this framework are permanently timestamped under the registered CERN DOI.
 
- 
+**The Objective:** Build an open-source Python pipeline that automatically pulls, cleans, merges, and plots the three key datasets to test the predicted **48-to-72-hour lag** between solar events and orca behavioral changes. The developer(s) who deliver working, validated correlation charts will receive **permanent co-author credit** on the master publication.
 
---- 
+---
 
- 
+## 🛠️ Developer Technical Specifications
 
-## 📢 Call for Data Engineers & Co-Authors 
+We need a Python script using `pandas`, `matplotlib`/`seaborn` that:
+1. Queries historical solar flare/CME data
+2. Pulls regional geomagnetic variation data
+3. Pulls Salish Sea orca acoustic/sighting data
+4. Aligns everything and isolates the 48–72 hour lag window
 
- 
+### Required Data Sources:
 
-The conceptual physics and environmental architecture of this framework are completely locked and permanently timestamped under a registered CERN DOI [5.1].  
+1. **Solar Activity** — SunPy library (GOES X-ray flux & major flares)
+2. **Geomagnetic Fluctuations** — USGS geomagnetic observatories (focus on Newport, WA area)
+3. **Orca Bioacoustics** — Ocean Networks Canada (ONC) Oceans 3.0 API
 
- 
+---
 
-**The Objective:** We are building an open-source Python pipeline to automate data aggregation and generate our validation charts. The developer or team that successfully writes the script to pull these data points and plot the historical correlation will receive **Permanent Co-Author Credit** on the master publication file. 
+## 🔬 The Core Hypothesis
 
- 
+### 1. The Sun-Earth-Moon Circuit
+The Sun powers the system, Earth acts as a giant electromagnet, and the Moon regulates it. During Solar Maximum, major CMEs overload and disrupt the steady magnetic rhythm.
 
---- 
+### 2. The Magnetic Salmon Bottleneck
+Salmon use magnetite crystals and cryptochrome proteins for navigation. A significant regional geomagnetic shift (~6°) disrupts their internal compass, causing prey to bottleneck in coastal areas.
 
- 
+### 3. Existential Luxury & Non-Human Ritual
+Easy prey → reduced hunting effort for orcas → cognitive slack → increased play, social copying, and cultural fads (e.g., "salmon hat" phenomenon).
 
-## 🛠️ Developer Technical Specifications 
+---
 
- 
+## 🧪 Pipeline Starter Code (Updated & Fixed)
 
-We require an automated Python script (`pandas`, `matplotlib`/`seaborn`) that queries, clean-merges, and plots data across three open-source APIs to isolate our predicted 48-to-72-hour lag window. 
+Copy these functions into `Pipeline.py` as a starting point.
 
- 
-
-### Required API Implementations: 
-
-1. **Solar Activity Input:** Query `SunPy` to fetch historical GOES Satellite X-ray flux and Coronal Mass Ejection (CME) alerts. 
-
-2. **Geomagnetic Grid Fluctuations:** Utilize the USGS `Geomag-Algorithms` or `MagPy` library to pull regional magnetic declination logs (specifically tracking 6-degree local shifts near the Newport, Washington observatory array). 
-
-3. **Bioacoustic/Sighting Timestamps:** Use the `onc` Python client library to query the Ocean Networks Canada Oceans 3.0 API, extracting continuous acoustic event metadata and orca social communication density timestamps in the Salish Sea. 
-
- 
-
---- 
-
- 
-
-## 🔬 The Core Hypothesis 
-
- 
-
-### 1. The Sun-Earth-Moon Circuit 
-
-The Sun acts as a planetary power generator, Earth functions as a giant electromagnet, and the Moon serves as a structural regulator by mechanically stirring the liquid iron core and pulling on upper atmospheric plasma tides. Under Solar Maximum conditions, major CMEs overload the circuit, shattering the steady magnetic background rhythm. 
-
- 
-
-### 2. The Magnetic Salmon Bottleneck 
-
-Migrating salmon utilize microscopic clusters of magnetite in their nasal cavities to interpret Earth's grid lines for natal homing. A 6-degree regional geomagnetic tilt short-circuits this internal compass. Unable to locate river-mouth coordinates, the migrating biomass is forced into localized, dense bottlenecks in coastal estuaries and bays. 
-
- 
-
-### 3. Existential Luxury & Non-Human Ritual 
-
-When localized prey density spikes, hunting effort drops to zero. This grants apex predators (*Orcinus orca*) immediate **cognitive slack** and profound boredom. This psychological environmental shift channels their high intelligence into creative play, status manipulation, and arbitrary social copying—triggering viral cultural fads (e.g., the historic "salmon hat" phenomena) and maritime defensive reactions (e.g., Iberian rudder strikes targeting localized metallic EMF signatures). 
-
- 
-
---- 
-
- 
-
-## 🚀 How to Contribute and Join the Project 
-
-1. **Fork** this repository.
-
-markdown## 🧪 Open-Source Starter Code Architecture
-
-To fast-track development, the baseline API connection scripts have been structured below. Developers can use these snippets as the foundation for the automated pipeline.
-
-### Pipeline 1: Solar Activity Input (SunPy)
 ```python
 import pandas as pd
+from datetime import datetime
+import requests
+# sunpy is recommended for solar data (pip install sunpy)
+
+# ==================== 1. SOLAR ACTIVITY ====================
 from sunpy.net import Fido, attrs as a
 
-def get_goes_solar_flares(start_date, end_date):
-    """Queries SunPy for GOES Satellite X-ray flux events."""
+def get_major_solar_flares(start_date, end_date):
+    """Fetch major (M/X-class) solar flares using SunPy."""
     result = Fido.search(
         a.Time(start_date, end_date),
         a.hek.FL,
@@ -104,114 +69,96 @@ def get_goes_solar_flares(start_date, end_date):
     )
     if result:
         df = result['hek'].to_pandas()
-        clean_df = df[['event_starttime', 'event_peaktime', 'fl_classvalue']]
-        major_flares = clean_df[clean_df['fl_classvalue'].str.startswith(('M', 'X'), na=False)]
-        return major_flares.sort_values(by='event_starttime')
-    return None
-```
+        df = df[['event_starttime', 'event_peaktime', 'fl_classvalue']]
+        major_flares = df[df['fl_classvalue'].str.startswith(('M', 'X'), na=False)]
+        return major_flares.sort_values(by='event_peaktime').reset_index(drop=True)
+    return pd.DataFrame()
 
-#pythonimport pandas as pd
-import requests
-
-
+# ==================== 2. GEOMAGNETIC DATA ====================
 def get_newport_magnetic_data(start_date, end_date):
-    """Tracks local magnetic variations near Newport, WA (NMP) via USGS API."""
-    url = "https://usgs.gov"
+    """Pull magnetic declination data from USGS (Newport Observatory)."""
+    # Real USGS Geomagnetism API endpoint example
+    base_url = "https://geomag.usgs.gov/ws/data/"
     params = {
-        "id": "NMP",  # Newport Observatory Code
+        "id": "NMP",                    # Newport, WA
         "starttime": start_date,
         "endtime": end_date,
-        "elements": "D,H",  # D = Declination, H = Horizontal Intensity
+        "elements": "D,H",              # D = Declination, H = Horizontal intensity
         "format": "json",
-        "sampling_period": "60",  # 1-minute intervals to catch spikes
+        "sampling_period": "60"         # minutes
     }
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        data = response.json()
-        df = pd.DataFrame(data["values"])
-        df.columns = ["timestamp", "declination", "horizontal_intensity"]
-        return df
-    return None
+    try:
+        response = requests.get(base_url, params=params, timeout=30)
+        if response.status_code == 200:
+            data = response.json()
+            df = pd.DataFrame(data.get("values", []))
+            if not df.empty:
+                df.columns = ["timestamp", "declination", "horizontal_intensity"]
+                df['timestamp'] = pd.to_datetime(df['timestamp'])
+                return df
+    except Exception as e:
+        print(f"Error fetching magnetic data: {e}")
+    return pd.DataFrame()
 
-
-def get_salish_sea_orca_audio(start_date, end_date, api_token="YOUR_TOKEN"):
-    """Extracts bioacoustic event metadata and orca communication timestamps from ONC."""
-    url = "https://oceannetworks.ca"
-    headers = {"Authorization": f"Bearer {api_token}"}
+# ==================== 3. ORCA BIOACOUSTICS ====================
+def get_salish_sea_orca_data(start_date, end_date, token=None):
+    """Query ONC Oceans 3.0 API for hydrophone data in Salish Sea."""
+    base_url = "https://data.oceannetworks.ca/api/search"
+    # You will need a free ONC token for full access
+    headers = {"Authorization": f"Bearer {token}"} if token else {}
     params = {
-        "locationCode": "SVI",  # Strait of Georgia / Salish Sea Array
+        "locationCode": "SVI",           # Strait of Georgia / Salish Sea
         "deviceCategoryCode": "HYDROPHONE",
-        "dateFrom": start_date,  # Format: YYYY-MM-DDTHH:mm:ss.fffZ
-        "dateTo": end_date,
-        "extension": "json",
+        "dateFrom": f"{start_date}T00:00:00.000Z",
+        "dateTo": f"{end_date}T23:59:59.999Z",
+        "extension": "json"
     }
-    response = requests.get(url, headers=headers, params=params)
-    if response.status_code == 200:
-        df = pd.DataFrame(response.json())
-        return df
-    return None
-  
-```
+    try:
+        response = requests.get(base_url, headers=headers, params=params)
+        if response.status_code == 200:
+            data = response.json()
+            return pd.DataFrame(data)
+    except Exception as e:
+        print(f"Error fetching ONC data: {e}")
+    return pd.DataFrame()
 
-### 🎯 Next Milestones for Contributors:
-1. **Time-Series Alignment:** Clean and synchronize the timestamps across all three datasets.
-2. **Lag Identification:** Isolate the exact 48-to-72-hour delay window between an X-Class flare peak and an uptick in regional orca social vocalization density.
-3. **Visualization:** Plot the final correlation graphs (`matplotlib` / `seaborn`) to append to the main Zenodo publication.
-
-3. Build the data pipeline script using the target client libraries. 
-
-4. Open a **Pull Request** displaying your generated correlation graphs.  
-
-5. Once verified, you will be formally added to the Zenodo DOI publication file as a Core Technical Architect. '''python
-text### Pipeline 4: Time-Series Merging Logic
-
-```python
+# ==================== 4. LAG ANALYSIS ====================
 def merge_and_analyze_lag(flare_df, mag_df, audio_df):
-    """Aligns timestamps across all three datasets and isolates the 48-to-72 hour lag window."""
-    # Step 1: Standardize all dataframe timestamps to UTC datetime objects
+    """Align datasets and find 48-72 hour correlations."""
+    if flare_df.empty or mag_df.empty or audio_df.empty:
+        return pd.DataFrame()
+    
+    # Standardize timestamps
     flare_df['event_peaktime'] = pd.to_datetime(flare_df['event_peaktime'], utc=True)
     mag_df['timestamp'] = pd.to_datetime(mag_df['timestamp'], utc=True)
-    audio_df['dateFrom'] = pd.to_datetime(audio_df['dateFrom'], utc=True)
+    # Adjust column name based on actual ONC output
+    time_col = 'dateFrom' if 'dateFrom' in audio_df.columns else audio_df.columns[0]
+    audio_df[time_col] = pd.to_datetime(audio_df[time_col], utc=True)
     
     correlated_events = []
     
-    # Step 2: Loop through each major solar flare event
-    for idx, flare in flare_df.iterrows():
+    for _, flare in flare_df.iterrows():
         flare_time = flare['event_peaktime']
-        
-        # Define our targeted 48-to-72-hour reaction window
         window_start = flare_time + pd.Timedelta(hours=48)
         window_end = flare_time + pd.Timedelta(hours=72)
         
-        # Step 3: Check for regional 6-degree magnetic spikes inside that window
-        mag_window = mag_df[(mag_df['timestamp'] >= window_start) & (mag_df['timestamp'] <= window_end)]
+        # Check for significant magnetic shifts
+        mag_window = mag_df[(mag_df['timestamp'] >= window_start) & 
+                           (mag_df['timestamp'] <= window_end)]
         significant_tilts = mag_window[mag_window['declination'].abs() >= 6.0]
         
-        # Step 4: Check for Orca vocalization surges inside the exact same window
-        audio_window = audio_df[(audio_df['dateFrom'] >= window_start) & (audio_df['dateFrom'] <= window_end)]
+        # Check for orca vocalization/activity increase
+        audio_window = audio_df[(audio_df[time_col] >= window_start) & 
+                               (audio_df[time_col] <= window_end)]
         
-        # If both physical triggers align, capture the matching dataset for plotting
         if not significant_tilts.empty and not audio_window.empty:
             correlated_events.append({
                 'flare_time': flare_time,
                 'flare_class': flare['fl_classvalue'],
                 'magnetic_spikes': len(significant_tilts),
-                'orca_vocal_density': len(audio_window)
+                'orca_events': len(audio_window),
+                'lag_hours': (window_start - flare_time).total_seconds() / 3600
             })
-            
+    
     return pd.DataFrame(correlated_events)
- ```
-markdown## ⚛️ The Quantum Bridge: Cryptochrome & Radical Pair Disruption
 
-To address mainstream skepticism regarding how a macro-geomagnetic shift translates to a precise 48-to-72-hour behavioral lag in apex predators, the framework integrates quantum biology alongside mechanical magnetite navigation.
-
-### 1. Quantum Visual Radar
-Migrating salmon and cetaceans utilize retina-bound **Cryptochrome (Cry)** proteins. When activated by light, these proteins form a light-dependent **radical pair**—a pair of highly unstable, quantum-entangled electrons. Earth's subtle magnetic grid lines interact with the spin state of these entangled electrons, superimposing a visual overlay of "navigation lines" directly onto the animal's field of vision.
-
-### 2. The Solar Radio Frequency (RF) Jammer
-Coronal Mass Ejections (CMEs) that trigger low-latitude auroras simultaneously bombard Earth's atmosphere with intense **Radio Frequency (RF) static** (specifically in the 1–30 MHz range). Peer-reviewed quantum biology demonstrates that weak RF fields completely disrupt the delicate coherence of entangled radical pairs. 
-
-### 3. Sensory Blinding to Behavioral Feedback
-The solar storm does not need to warp the physical tectonic crust. Instead, the solar RF noise acts as a planet-wide sensory jammer, blinding the animal's quantum-level visual compass. 
-* **The Salmon:** Blinded by quantum static, they lose natal river coordinates and bottleneck into high-density coastal estuaries.
-* **The Orcas:** Simultaneously experiencing the sudden, chaotic vibration of their own visual magnetic field, they encounter an immediate, effortless food surplus. The resulting drop in hunting pressure triggers localized cognitive slack, boredom, and arbitrary social fads.
