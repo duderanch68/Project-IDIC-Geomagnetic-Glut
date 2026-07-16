@@ -201,3 +201,17 @@ def merge_and_analyze_lag(flare_df, mag_df, audio_df):
             
     return pd.DataFrame(correlated_events)
 ```
+markdown## ⚛️ The Quantum Bridge: Cryptochrome & Radical Pair Disruption
+
+To address mainstream skepticism regarding how a macro-geomagnetic shift translates to a precise 48-to-72-hour behavioral lag in apex predators, the framework integrates quantum biology alongside mechanical magnetite navigation.
+
+### 1. Quantum Visual Radar
+Migrating salmon and cetaceans utilize retina-bound **Cryptochrome (Cry)** proteins. When activated by light, these proteins form a light-dependent **radical pair**—a pair of highly unstable, quantum-entangled electrons. Earth's subtle magnetic grid lines interact with the spin state of these entangled electrons, superimposing a visual overlay of "navigation lines" directly onto the animal's field of vision.
+
+### 2. The Solar Radio Frequency (RF) Jammer
+Coronal Mass Ejections (CMEs) that trigger low-latitude auroras simultaneously bombard Earth's atmosphere with intense **Radio Frequency (RF) static** (specifically in the 1–30 MHz range). Peer-reviewed quantum biology demonstrates that weak RF fields completely disrupt the delicate coherence of entangled radical pairs. 
+
+### 3. Sensory Blinding to Behavioral Feedback
+The solar storm does not need to warp the physical tectonic crust. Instead, the solar RF noise acts as a planet-wide sensory jammer, blinding the animal's quantum-level visual compass. 
+* **The Salmon:** Blinded by quantum static, they lose natal river coordinates and bottleneck into high-density coastal estuaries.
+* **The Orcas:** Simultaneously experiencing the sudden, chaotic vibration of their own visual magnetic field, they encounter an immediate, effortless food surplus. The resulting drop in hunting pressure triggers localized cognitive slack, boredom, and arbitrary social fads.
