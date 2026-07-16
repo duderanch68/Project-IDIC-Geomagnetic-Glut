@@ -110,21 +110,47 @@ def get_goes_solar_flares(start_date, end_date):
     return None
 ```
 
-### Pipeline 2 & 3: Geomagnetic Spikes & ONC Audio Telemetry
-```python
+#pythonimport pandas as pd
 import requests
 
-def get_newport_magnetic_data(start_date, end_date):
-    """Tracks local 6-degree magnetic declination spikes near Newport, WA (NMP)."""
-    url = f"https://usgs.gov{start_date}&endtime={end_date}&type=adjusted"
-    response = requests.get(url)
-    return response.json() if response.status_code == 200 else None
 
-def get_salish_sea_orca_audio(start_date, end_date):
-    """Extracts bioacoustic event metadata and orca communication density from ONC."""
-    url = f"https://oceannetworks.ca{start_date}&to={end_date}"
-    response = requests.get(url)
-    return response.json() if response.status_code == 200 else None
+def get_newport_magnetic_data(start_date, end_date):
+    """Tracks local magnetic variations near Newport, WA (NMP) via USGS API."""
+    url = "https://usgs.gov"
+    params = {
+        "id": "NMP",  # Newport Observatory Code
+        "starttime": start_date,
+        "endtime": end_date,
+        "elements": "D,H",  # D = Declination, H = Horizontal Intensity
+        "format": "json",
+        "sampling_period": "60",  # 1-minute intervals to catch spikes
+    }
+    response = requests.get(url, params=params)
+    if response.status_code == 200:
+        data = response.json()
+        df = pd.DataFrame(data["values"])
+        df.columns = ["timestamp", "declination", "horizontal_intensity"]
+        return df
+    return None
+
+
+def get_salish_sea_orca_audio(start_date, end_date, api_token="YOUR_TOKEN"):
+    """Extracts bioacoustic event metadata and orca communication timestamps from ONC."""
+    url = "https://oceannetworks.ca"
+    headers = {"Authorization": f"Bearer {api_token}"}
+    params = {
+        "locationCode": "SVI",  # Strait of Georgia / Salish Sea Array
+        "deviceCategoryCode": "HYDROPHONE",
+        "dateFrom": start_date,  # Format: YYYY-MM-DDTHH:mm:ss.fffZ
+        "dateTo": end_date,
+        "extension": "json",
+    }
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200:
+        df = pd.DataFrame(response.json())
+        return df
+    return None
+  
 ```
 
 ### 🎯 Next Milestones for Contributors:
