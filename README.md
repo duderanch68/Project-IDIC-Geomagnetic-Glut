@@ -162,4 +162,42 @@ def get_salish_sea_orca_audio(start_date, end_date, api_token="YOUR_TOKEN"):
 
 4. Open a **Pull Request** displaying your generated correlation graphs.  
 
-5. Once verified, you will be formally added to the Zenodo DOI publication file as a Core Technical Architect. 
+5. Once verified, you will be formally added to the Zenodo DOI publication file as a Core Technical Architect. '''python
+text### Pipeline 4: Time-Series Merging Logic
+
+```python
+def merge_and_analyze_lag(flare_df, mag_df, audio_df):
+    """Aligns timestamps across all three datasets and isolates the 48-to-72 hour lag window."""
+    # Step 1: Standardize all dataframe timestamps to UTC datetime objects
+    flare_df['event_peaktime'] = pd.to_datetime(flare_df['event_peaktime'], utc=True)
+    mag_df['timestamp'] = pd.to_datetime(mag_df['timestamp'], utc=True)
+    audio_df['dateFrom'] = pd.to_datetime(audio_df['dateFrom'], utc=True)
+    
+    correlated_events = []
+    
+    # Step 2: Loop through each major solar flare event
+    for idx, flare in flare_df.iterrows():
+        flare_time = flare['event_peaktime']
+        
+        # Define our targeted 48-to-72-hour reaction window
+        window_start = flare_time + pd.Timedelta(hours=48)
+        window_end = flare_time + pd.Timedelta(hours=72)
+        
+        # Step 3: Check for regional 6-degree magnetic spikes inside that window
+        mag_window = mag_df[(mag_df['timestamp'] >= window_start) & (mag_df['timestamp'] <= window_end)]
+        significant_tilts = mag_window[mag_window['declination'].abs() >= 6.0]
+        
+        # Step 4: Check for Orca vocalization surges inside the exact same window
+        audio_window = audio_df[(audio_df['dateFrom'] >= window_start) & (audio_df['dateFrom'] <= window_end)]
+        
+        # If both physical triggers align, capture the matching dataset for plotting
+        if not significant_tilts.empty and not audio_window.empty:
+            correlated_events.append({
+                'flare_time': flare_time,
+                'flare_class': flare['fl_classvalue'],
+                'magnetic_spikes': len(significant_tilts),
+                'orca_vocal_density': len(audio_window)
+            })
+            
+    return pd.DataFrame(correlated_events)
+```
